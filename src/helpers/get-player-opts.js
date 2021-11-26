@@ -8,7 +8,7 @@ function getPlayerOpts(opts) {
     isAutoPlay,
     isMuted,
     licenseKey,
-    playlist,
+    playlist
   } = opts;
 
   const hasAdvertising = !!generatePrerollUrl;
@@ -33,7 +33,7 @@ function getPlayerOpts(opts) {
     playerOpts.advertising = {
       client: 'googima',
       admessage: 'Ad — xxs left',
-      autoplayadsmuted: true,
+      autoplayadsmuted: true
     };
   }
 

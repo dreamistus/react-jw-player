@@ -1,7 +1,7 @@
 import getEventNameFromProp from './get-event-name-from-prop';
 
 function initialize({ component, player, playerOpts }) {
-  function _onBeforePlay(event) {
+  function onBeforePlay(event) {
     component.eventHandlers.onBeforePlay(event, player);
   }
 
@@ -9,7 +9,7 @@ function initialize({ component, player, playerOpts }) {
 
   const eventsToInitialize = {};
 
-  Object.keys(component.props).forEach((prop) => {
+  Object.keys(component.props).forEach(prop => {
     const eventName = getEventNameFromProp(prop);
 
     if (eventName) {
@@ -19,14 +19,14 @@ function initialize({ component, player, playerOpts }) {
 
   eventsToInitialize.adPlay = component.eventHandlers.onAdPlay;
   eventsToInitialize.beforeComplete = component.props.onOneHundredPercent;
-  eventsToInitialize.beforePlay = _onBeforePlay;
+  eventsToInitialize.beforePlay = onBeforePlay;
   eventsToInitialize.fullscreen = component.eventHandlers.onFullScreen;
   eventsToInitialize.mute = component.eventHandlers.onMute;
   eventsToInitialize.play = component.eventHandlers.onPlay;
   eventsToInitialize.playlistItem = component.eventHandlers.onVideoLoad;
   eventsToInitialize.time = component.eventHandlers.onTime;
 
-  Object.keys(eventsToInitialize).forEach((event) => {
+  Object.keys(eventsToInitialize).forEach(event => {
     player.on(event, eventsToInitialize[event]);
   });
 }

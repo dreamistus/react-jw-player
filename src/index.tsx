@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import isEqual from 'react-fast-compare';
 
 import createEventHandlers from './create-event-handlers';
@@ -10,31 +10,52 @@ import removeJWPlayerInstance from './helpers/remove-jw-player-instance';
 import setJWPlayerDefaults from './helpers/set-jw-player-defaults';
 
 import defaultProps from './default-props';
-import propTypes from './player-prop-types';
+import { ExtendedWindow, ReactJWPlayerProps, ReactJWPlayerState } from './types';
 
 const displayName = 'ReactJWPlayer';
 
-class ReactJWPlayer extends Component {
-  constructor(props) {
+
+
+class ReactJWPlayer extends React.Component<ReactJWPlayerProps, ReactJWPlayerState> {
+  private eventHandlers;
+
+  private uniqueScriptId;
+
+  private videoRef: Element | null;
+
+  static defaultProps = defaultProps;
+
+  static displayName = displayName;
+
+  constructor(props: ReactJWPlayerProps) {
     super(props);
     this.state = {
       adHasPlayed: false,
       hasPlayed: false,
-      hasFired: {},
+      hasFired: false
     };
     this.eventHandlers = createEventHandlers(this);
     this.uniqueScriptId = 'jw-player-script';
 
     if (props.useMultiplePlayerScripts) {
-      this.uniqueScriptId += `-${props.playerId}`;
+      this.uniqueScriptId += `-${ props.playerId }`;
     }
 
     this.videoRef = null;
     this._initialize = this._initialize.bind(this);
     this._setVideoRef = this._setVideoRef.bind(this);
   }
-  componentDidMount() {
-    const isJWPlayerScriptLoaded = !!window.jwplayer;
+
+  
+
+  componentDidMount(): void {
+
+    let isJWPlayerScriptLoaded = false;
+    if (typeof window !== 'undefined') {
+      const extendedWindow = window as ExtendedWindow;
+      isJWPlayerScriptLoaded = Boolean(extendedWindow.jwplayer);
+    }
+
     const existingScript = document.getElementById(this.uniqueScriptId);
     const isUsingMultiplePlayerScripts = this.props.useMultiplePlayerScripts;
 
@@ -53,57 +74,71 @@ class ReactJWPlayer extends Component {
         context: document,
         onLoadCallback: this._initialize,
         scriptSrc: this.props.playerScript,
-        uniqueScriptId: this.uniqueScriptId,
+        uniqueScriptId: this.uniqueScriptId
       });
     } else {
       existingScript.onload = getCurriedOnLoad(existingScript, this._initialize);
     }
   }
-  shouldComponentUpdate(nextProps) {
+
+  shouldComponentUpdate(nextProps: ReactJWPlayerProps): boolean {
     const hasFileChanged = this.props.file !== nextProps.file;
     const hasPlaylistChanged = !isEqual(this.props.playlist, nextProps.playlist);
 
     return hasFileChanged || hasPlaylistChanged;
   }
-  componentDidUpdate() {
-    if (window.jwplayer && window.jwplayer(this.videoRef)) {
-      this._initialize();
+
+  componentDidUpdate(): void{
+    if (typeof window !== 'undefined' && this.videoRef !== null) {
+      const extendedWindow = window as ExtendedWindow;
+      if (extendedWindow.jwplayer(this.videoRef)) {
+        this._initialize();
+      }
     }
   }
-  componentWillUnmount() {
+
+  componentWillUnmount(): void {
     removeJWPlayerInstance(this.videoRef, window);
   }
-  _initialize() {
+
+  _initialize(): void {
     const { playerId, useMultiplePlayerScripts } = this.props;
 
     if (useMultiplePlayerScripts) {
       setJWPlayerDefaults({ context: window, playerId });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const component = this;
-    const player = window.jwplayer(this.videoRef);
+    let player;
+
+    if (typeof window !== 'undefined' && this.videoRef !== null) {
+      const extendedWindow = window as ExtendedWindow;
+      player = extendedWindow.jwplayer(this.videoRef);
+    }
     if (!player) {
       // this player ref may have been destroyed already
-      return; 
+      return;
     }
-    
+
     const playerOpts = getPlayerOpts(this.props);
 
     initialize({ component, player, playerOpts });
   }
-  _setVideoRef(element) {
+
+  _setVideoRef = (element: HTMLDivElement): void => {
     this.videoRef = element;
-  }
-  render() {
+  };
+
+  render(): JSX.Element {
     return (
-      <div className={this.props.className} >
-        <div id={this.props.playerId} ref={this._setVideoRef} />
+      <div className={ this.props.className } >
+        <div id={ this.props.playerId } ref={ this._setVideoRef } />
       </div>
     );
   }
 }
 
-ReactJWPlayer.defaultProps = defaultProps;
-ReactJWPlayer.displayName = displayName;
-ReactJWPlayer.propTypes = propTypes;
+
+
 export default ReactJWPlayer;

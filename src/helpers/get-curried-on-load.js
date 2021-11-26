@@ -1,11 +1,9 @@
 function getCurriedOnLoad(existingScript, callback) {
   const previousOnload = existingScript.onload || (() => {});
-  const curriedOnLoad = () => {
+  return () => {
     previousOnload();
     callback();
   };
-
-  return curriedOnLoad;
 }
 
 export default getCurriedOnLoad;

@@ -1,6 +1,10 @@
-const noOp = () => {};
+import { ReactJWPlayerProps } from './types';
 
-const defaultProps = {
+const noOp = (): void => {
+  // do nothing.
+};
+
+const defaultProps: Omit<ReactJWPlayerProps, 'playerId' | 'playerScript'> = {
   aspectRatio: 'inherit',
   file: '',
   isAutoPlay: undefined,
@@ -34,7 +38,7 @@ const defaultProps = {
   onBuffer: noOp,
   onBufferChange: noOp,
   playlist: '',
-  useMultiplePlayerScripts: false,
+  useMultiplePlayerScripts: false
 };
 
 export default defaultProps;

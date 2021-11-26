@@ -49,7 +49,7 @@ function onTime(event) {
 
   if (hasChanged) {
     this.setState({
-      hasFired,
+      hasFired
     });
   }
 }
