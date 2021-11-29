@@ -1,19 +1,37 @@
-function getPlayerOpts(opts) {
+import { MediaObject, ReactJWPlayerProps } from '../types';
+
+export type PlayerOpts = {
+  key?: string;
+  playlist?: string | MediaObject[];
+  file?: string;
+  aspectratio?: 'inherit' | '1:1' | '16:9';
+  advertising?: {
+    client: string;
+    admessage: string;
+    autoplayadsmuted: boolean;
+  };
+  autostart?: boolean;
+  mute?: boolean;
+  image?: string;
+  customProps?: unknown;
+};
+
+function getPlayerOpts(props: ReactJWPlayerProps): PlayerOpts  {
   const {
     aspectRatio,
-    customProps = {},
     file,
     generatePrerollUrl,
     image,
     isAutoPlay,
     isMuted,
     licenseKey,
-    playlist
-  } = opts;
+    playlist,
+    customProps
+  } = props;
 
   const hasAdvertising = !!generatePrerollUrl;
 
-  const playerOpts = {};
+  const playerOpts: PlayerOpts = {};
 
   if (licenseKey) {
     playerOpts.key = licenseKey;

@@ -2,30 +2,71 @@ import React from 'react';
 import isEqual from 'react-fast-compare';
 
 import createEventHandlers from './create-event-handlers';
-import getCurriedOnLoad from './helpers/get-curried-on-load';
 import getPlayerOpts from './helpers/get-player-opts';
 import initialize from './helpers/initialize';
 import installPlayerScript from './helpers/install-player-script';
 import removeJWPlayerInstance from './helpers/remove-jw-player-instance';
 import setJWPlayerDefaults from './helpers/set-jw-player-defaults';
 
-import defaultProps from './default-props';
 import { ExtendedWindow, ReactJWPlayerProps, ReactJWPlayerState } from './types';
 
-const displayName = 'ReactJWPlayer';
+const UNIQUE_SCRIPT_ID = 'jw-player-script';
+const DISPLAY_NAME = 'ReactJWPlayer';
+
+const noOp = (): void => {
+  // do nothing.
+};
+
+const DEFAULT_PROPS: Omit<ReactJWPlayerProps, 'playerId' | 'playerScript'> = {
+  aspectRatio: 'inherit',
+  file: '',
+  isAutoPlay: undefined,
+  isMuted: undefined,
+  onAdPlay: noOp,
+  onAdResume: noOp,
+  onAdSkipped: noOp,
+  onAdComplete: noOp,
+  onEnterFullScreen: noOp,
+  onExitFullScreen: noOp,
+  onMute: noOp,
+  onUnmute: noOp,
+  onAutoStart: noOp,
+  onResume: noOp,
+  onPlay: noOp,
+  onClose: noOp,
+  onReady: noOp,
+  onError: noOp,
+  onAdPause: noOp,
+  onPause: noOp,
+  onVideoLoad: noOp,
+  onOneHundredPercent: noOp,
+  onThreeSeconds: noOp,
+  onTenSeconds: noOp,
+  onThirtySeconds: noOp,
+  onTwentyFivePercent: noOp,
+  onFiftyPercent: noOp,
+  onSeventyFivePercent: noOp,
+  onNinetyFivePercent: noOp,
+  onTime: noOp,
+  onBuffer: noOp,
+  onBufferChange: noOp,
+  playlist: '',
+  customProps: {},
+  useMultiplePlayerScripts: false
+};
 
 
 
 class ReactJWPlayer extends React.Component<ReactJWPlayerProps, ReactJWPlayerState> {
-  private eventHandlers;
+  static displayName = DISPLAY_NAME;
+
+  static defaultProps = DEFAULT_PROPS;
+
+  public eventHandlers;
 
   private uniqueScriptId;
 
   private videoRef: Element | null;
-
-  static defaultProps = defaultProps;
-
-  static displayName = displayName;
 
   constructor(props: ReactJWPlayerProps) {
     super(props);
@@ -34,37 +75,23 @@ class ReactJWPlayer extends React.Component<ReactJWPlayerProps, ReactJWPlayerSta
       hasPlayed: false,
       hasFired: false
     };
-    this.eventHandlers = createEventHandlers(this);
-    this.uniqueScriptId = 'jw-player-script';
-
+    this.uniqueScriptId = UNIQUE_SCRIPT_ID;
     if (props.useMultiplePlayerScripts) {
       this.uniqueScriptId += `-${ props.playerId }`;
     }
 
     this.videoRef = null;
+    this.eventHandlers = createEventHandlers(this);
     this._initialize = this._initialize.bind(this);
     this._setVideoRef = this._setVideoRef.bind(this);
   }
 
-  
-
   componentDidMount(): void {
-
-    let isJWPlayerScriptLoaded = false;
-    if (typeof window !== 'undefined') {
-      const extendedWindow = window as ExtendedWindow;
-      isJWPlayerScriptLoaded = Boolean(extendedWindow.jwplayer);
-    }
-
+    const isJWPlayerScriptLoaded = Boolean((window as ExtendedWindow).jwplayer);
     const existingScript = document.getElementById(this.uniqueScriptId);
     const isUsingMultiplePlayerScripts = this.props.useMultiplePlayerScripts;
 
-    if (!isUsingMultiplePlayerScripts && isJWPlayerScriptLoaded) {
-      this._initialize();
-      return;
-    }
-
-    if (isUsingMultiplePlayerScripts && existingScript) {
+    if (!isUsingMultiplePlayerScripts && (isJWPlayerScriptLoaded || existingScript)) {
       this._initialize();
       return;
     }
@@ -77,7 +104,8 @@ class ReactJWPlayer extends React.Component<ReactJWPlayerProps, ReactJWPlayerSta
         uniqueScriptId: this.uniqueScriptId
       });
     } else {
-      existingScript.onload = getCurriedOnLoad(existingScript, this._initialize);
+      
+      existingScript.addEventListener('onload', this._initialize);
     }
   }
 
@@ -98,6 +126,8 @@ class ReactJWPlayer extends React.Component<ReactJWPlayerProps, ReactJWPlayerSta
   }
 
   componentWillUnmount(): void {
+    const existingScript = document.getElementById(this.uniqueScriptId);
+    existingScript?.removeEventListener('onload', this._initialize);
     removeJWPlayerInstance(this.videoRef, window);
   }
 

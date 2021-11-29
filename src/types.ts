@@ -1,15 +1,53 @@
 export interface ReactJWPlayerProps {
+  /** A unique Id for the player instance. Used to distinguish the container divs. */
+  playerId: string;
+
+  /** Link to a valid JW Player script. */
+  playerScript: string;
+
+  /** Link to a valid JW Player playlist or playlist array. */
+  playlist: string | MediaObject[];
+
+  /** An optional aspect ratio to give the video player. Can be 'inherit', 1:1 or 16:9 currently. */
   aspectRatio: 'inherit' | '1:1' | '16:9';
+
+  /** An optional class name to give the container div. */
   className?: string;
+
+  /** Link to a valid JW Player video file. */
   file?: string;
-  generatePrerollUrl?: () => void;
+
+  /** URL to a poster image to display before playback starts. */
   image?: string;
+
+  /** Determines whether the player starts automatically or not. */
   isAutoPlay?: boolean;
+  
+  /** Determines whether the player starts muted or not. */
   isMuted?: boolean;
+  
+  /** License Key as supplied in the jwplayer dashboard, under: Players > Tools > Downloads > JW Player */
   licenseKey?: string;
+  
+  /** EXPERIMENTAL - Allows loading of multiple player scripts with the proper configuration. */
+  useMultiplePlayerScripts?: boolean;
+
+  /** Custom JWPlayer properties */
+  customProps: unknown;
+
+  /** Supply a function that returns a VAST or GOOGIMA tag for use in generating a preroll advertisement. */
+  generatePrerollUrl?: () => void;
+
+  /** A function that is run when the user pauses the preroll advertisement. */
   onAdPause?: () => void;
+
+  /** A function that is run once, when the preroll advertisement first starts to play. */
   onAdPlay?: () => void;
+
+  /** A function that is run when the user resumes playing the preroll advertisement. */
   onAdResume?: () => void;
+
+  /** A function that is run when the user skips an advertisement. */
   onAdSkipped?: () => void;
   onAdComplete?: () => void;
   onAutoStart?: () => void;
@@ -35,10 +73,6 @@ export interface ReactJWPlayerProps {
   onVideoLoad?: () => void;
   onBuffer?: () => void;
   onBufferChange?: () => void;
-  playerId: string;
-  playerScript: string;
-  playlist: string | MediaObject[];
-  useMultiplePlayerScripts: boolean;
 }
   
 export interface ReactJWPlayerState {
@@ -108,4 +142,52 @@ export interface MediaObject {
 }
 
 
+export type PlayerEvent = 
+'adPlay'
+| 'adResume'
+| 'adSkipped'
+| 'adComplete'
+| 'enterFullScreen'
+| 'exitFullScreen'
+| 'mute'
+| 'unmute'
+| 'autoStart'
+| 'resume'
+| 'play'
+| 'close'
+| 'ready'
+| 'error'
+| 'adPause'
+| 'pause'
+| 'videoLoad'
+| 'oneHundredPercent'
+| 'threeSeconds'
+| 'tenSeconds'
+| 'thirtySeconds'
+| 'twentyFivePercent'
+| 'fiftyPercent'
+| 'seventyFivePercent'
+| 'ninetyFivePercent'
+| 'time'
+| 'buffer'
+| 'bufferChange'
+| 'beforeComplete'
+| 'beforePlay'
+| 'fullscreen'
+| 'playlistItem';
 
+
+
+export const eventMap: { [key in keyof Partial<ReactJWPlayerProps>]: keyof jwplayer.EventParams } = {
+  onAdPlay: 'adPlay',
+  onAdSkipped: 'adSkipped',
+  onAdComplete: 'adComplete',
+  onPlay: 'play',
+  onReady: 'ready',
+  onError: 'error',
+  onAdPause: 'adPause',
+  onPause: 'pause',
+  onTime: 'time',
+  onBuffer: 'buffer',
+  onBufferChange: 'bufferChange'
+};
