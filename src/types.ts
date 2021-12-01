@@ -30,79 +30,54 @@ export interface ReactJWPlayerProps {
   /** License Key as supplied in the jwplayer dashboard, under: Players > Tools > Downloads > JW Player */
   licenseKey?: string;
   
-  /** EXPERIMENTAL - Allows loading of multiple player scripts with the proper configuration. */
-  useMultiplePlayerScripts?: boolean;
-
   /** Custom JWPlayer properties */
   customProps?: unknown;
 
   /** Supply a function that returns a VAST or GOOGIMA tag for use in generating a preroll advertisement. */
   generatePrerollUrl?: () => void;
-  
-
-  /* Fired when the player encounters any errors. */
-  /**  Fired when an error occurs after setup. */
-  onError?: () => void;
-  
-  onAutoStart?: () => void;
-  onEnterFullScreen?: () => void;
-  
-  onExitFullScreen?: () => void;
-  onFiftyPercent?: () => void;
-  onMute?: jwplayer.EventCallback<jwplayer.EventParams['mute']>;
-  onNinetyFivePercent?: () => void;
-  onOneHundredPercent?: () => void;
-  onClose?: () => void;
- 
-  onResume?: () => void;
-  onSeventyFivePercent?: () => void;
-  onTenSeconds?: () => void;
-  onThirtySeconds?: () => void;
-  onThreeSeconds?: () => void;
-  onTwentyFivePercent?: () => void;
-  onTime?: () => void;
-  onUnmute?: () => void;
-  onVideoLoad?: () => void;
 }
 
 /* Set of events related to advertisements. */
 export interface ReactJWPlayerProps {
-  
   /** Fired whenever an ad is requested by the player. */
-  onAdRequest?: () => void;
+  onAdRequest?: jwplayer.EventCallback<jwplayer.EventParams['adRequest']>;
 
   /** Fired when the user taps skip button during ad. */
-  onAdSkipped?: () => void;
+  onAdSkipped?: jwplayer.EventCallback<jwplayer.EventParams['adSkipped']>;
   
   /** Fired when ad is done playing. */
-  onAdComplete?: () => void; 
+  onAdComplete?: jwplayer.EventCallback<jwplayer.EventParams['adComplete']>;
 
   /** Fired when ad shows up on the screen. */
-  onAdImpression?: () => void; 
+  onAdImpression?: jwplayer.EventCallback<jwplayer.EventParams['adImpression']>;
 
   /** VPAID-only. Will trigger when a VPAID ad creative signals to our player that it is starting. 
    * This differs from adImpression since the advertisement may not yet be visible. 
    * Fires after the first onAdPlay event. 
    */
-  onAdStarted?: () => void;
+  onAdStarted?: jwplayer.EventCallback<jwplayer.EventParams['adStarted']>;
 
   /** Fired when new metadata has been broadcasted by the player during an Ad. */
-  onAdMeta?: () => void; 
+  //TODO: event missing in @types/jwplayer
+  //onAdMeta?: jwplayer.EventCallback<jwplayer.EventParams['adMeta']>;
 
   /** Fired when ad start to play or is resumed after pause. */
-  onAdPlay?: () => void;
+  onAdPlay?: jwplayer.EventCallback<jwplayer.EventParams['adPlay']>;
 
   /** Fired when ad is paused. */
-  onAdPause?: () => void; 
+  onAdPause?: jwplayer.EventCallback<jwplayer.EventParams['adPause']>;
 
   /** Fired whenever an ad contains companions. */
-  onAdCompanions?: () => void; 
+  onAdCompanions?: jwplayer.EventCallback<jwplayer.EventParams['adCompanions']>;
 
   /** Fired when ad can’t be played for any reason (onError event is fired at the same time). */
-  onAdError?: () => void; 
+  onAdError?: jwplayer.EventCallback<jwplayer.EventParams['adError']>;
 
   /** Continuous ad playback time update. */
-  onAdTime?: (event: jwplayer.EventParams['adTime']) => void;
+  onAdTime?: jwplayer.EventCallback<jwplayer.EventParams['adTime']>;
+
+  /** Fired when the user taps the ad (omitted if openSafariOnAdClick is set to true) */
+  onAdClick?: jwplayer.EventCallback<jwplayer.EventParams['adClick']>;
 }
 
 /*  A set of events reporting changes in the player state. 
@@ -112,38 +87,73 @@ export interface ReactJWPlayerProps {
 export interface ReactJWPlayerProps {
 /** Triggered the instant a user attempts to play a file. */
   //TODO: event missing in @types/jwplayer
-  // onPlayAttempt?: () => void;
+  // onPlayAttempt?: jwplayer.EventCallback<jwplayer.EventParams['playAttempt']>;
 
   /** Triggered by a video's first frame event (Or the instant an audio file begins playback). */
-  onFirstFrame?: (event: jwplayer.EventParams['firstFrame']) => void;
+  onFirstFrame?: jwplayer.EventCallback<jwplayer.EventParams['firstFrame']>;
 
   /** The player stopped playing. */
-  onIdle?: (event: jwplayer.EventParams['idle']) => void;
+  onIdle?: jwplayer.EventCallback<jwplayer.EventParams['idle']>;
 
   //TODO: event missing in @types/jwplayer
   /** The player has done playing current media. */
-  // onComplete: (event: jwplayer.EventParams['complete']) => void;
+  // onComplete: jwplayer.EventCallback<jwplayer.EventParams['complete']>;
 
   /** The player is buffering media. */
-  onBuffer?: (event: jwplayer.EventParams['buffer']) => void;
+  onBuffer?: jwplayer.EventCallback<jwplayer.EventParams['buffer']>;
 
   /** Fired when the currently playing item loads additional data into its buffer. */
-  onBufferChange?: (event: jwplayer.EventParams['bufferChange']) => void;
+  onBufferChange?: jwplayer.EventCallback<jwplayer.EventParams['bufferChange']>;
 
   /** The player started to play media. */
-  onPlay?: (event: jwplayer.EventParams['play']) => void; 
+  onPlay?: jwplayer.EventCallback<jwplayer.EventParams['play']>;
 
   /** The player is paused. */
-  onPause?: (event: jwplayer.EventParams['pause']) => void;
+  onPause?: jwplayer.EventCallback<jwplayer.EventParams['pause']>;
 
   /** The player is created and ready to be used. */
-  onReady?: (event: jwplayer.EventParams['ready']) => void;
+  onReady?: jwplayer.EventCallback<jwplayer.EventParams['ready']>;
+
+  /** Triggered when the player has gone in or out of a mute state. */
+  onMute?: jwplayer.EventCallback<jwplayer.EventParams['mute']>;
+
+  /** Triggered when the player's volume is changed. */
+  onVolume?: jwplayer.EventCallback<jwplayer.EventParams['volume']>;
+
+  /** While the player is playing, this event is fired as the playback position gets updated. 
+   * This may occur as frequently as 10 times per second. 
+   */
+  onTime?: jwplayer.EventCallback<jwplayer.EventParams['time']>;
+
+  onFullscreen?: jwplayer.EventCallback<jwplayer.EventParams['fullscreen']>;
+
+  onSeek?: jwplayer.EventCallback<jwplayer.EventParams['seek']>;
 }
-  
+
+/* Fired when the player encounters any errors. */
+export interface ReactJWPlayerProps {
+  /**  Fired when an error occurs after setup. */
+  onError?: jwplayer.EventCallback<jwplayer.EventParams['error']>;
+
+  /** Fired when an error occurs before setup is complete, or in other words before the onReady Event. */
+  onSetupError?: jwplayer.EventCallback<jwplayer.EventParams['setupError']>;
+}
+
+/** Misc JWPlayer events */
+// export interface ReactJWPlayerProps{
+/** Triggers when the recommendations interface is closed. */
+//TODO: event missing in @types/jwplayer
+// onClose?: jwplayer.EventCallback<jwplayer.EventParams['close']>;
+
+//TODO: event missing in @types/jwplayer
+/** Fired when the player is configured to autostart but the browser's settings are preventing it. */
+// onAutoStartNotAllowed?: jwplayer.EventCallback<jwplayer.EventParams['autostartNotAllowed']>;
+//}
+
+
 export interface ReactJWPlayerState {
-  adHasPlayed: boolean;
-  hasPlayed: boolean;
-  hasFired: boolean;
+  //TODO: player state
+  foo: string;
 }
 
 export type PlayerConfigs = { [playerId: string] : unknown }; 
@@ -211,26 +221,31 @@ export interface MediaObject {
 
 /** Map component callback names to jwplayer events */
 export const callbackToEventMap: { [key in keyof Partial<ReactJWPlayerProps>]: keyof jwplayer.EventParams } = {
+  /* Set of events related to advertisements. */
   onAdRequest: 'adRequest',
   onAdSkipped: 'adSkipped',
   onAdComplete: 'adComplete',
   onAdImpression: 'adImpression',
   onAdStarted: 'adStarted',
-  // TODO: event missing in @types/jwplayer
-  //onAdMeta: 'adMeta'
   onAdPlay: 'adPlay',
   onAdPause: 'adPause',
   onAdCompanions: 'adCompanions',
   onAdError: 'adError',
   onAdTime: 'adTime',
+  onAdClick: 'adClick',
  
   onPlay: 'play',
   onPause: 'pause',
   onReady: 'ready',
   onError: 'error',
-
+  onMute: 'mute',
+  onVolume: 'volume',
+  onFirstFrame: 'firstFrame',
+  onFullscreen: 'fullscreen',
+  onIdle: 'idle',
+  onSeek: 'seek',
+  onSetupError: 'setupError',
   onTime: 'time',
   onBuffer: 'buffer',
-  onBufferChange: 'bufferChange',
-  onMute: 'mute'
+  onBufferChange: 'bufferChange'
 };

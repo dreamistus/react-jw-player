@@ -10,13 +10,13 @@ function installPlayerScript({
   onLoadCallback, 
   scriptSrc, 
   uniqueScriptId }: InstallPlayerScriptArgs
-): void {
+): HTMLScriptElement {
   const jwPlayerScript = context.createElement('script');
   jwPlayerScript.id = uniqueScriptId;
   jwPlayerScript.src = scriptSrc;
   jwPlayerScript.onload = onLoadCallback;
 
-  context.head.appendChild(jwPlayerScript);
+  return context.head.appendChild(jwPlayerScript);
 }
 
 export default installPlayerScript;

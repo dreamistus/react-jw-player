@@ -1,13 +1,10 @@
 import React from 'react';
 import isEqual from 'react-fast-compare';
 
-import createEventHandlers from './create-event-handlers';
 import getPlayerOpts from './helpers/get-player-opts';
 import initialize from './helpers/initialize';
 import installPlayerScript from './helpers/install-player-script';
 import removeJWPlayerInstance from './helpers/remove-jw-player-instance';
-import setJWPlayerDefaults from './helpers/set-jw-player-defaults';
-
 import { ExtendedWindow, ReactJWPlayerProps, ReactJWPlayerState } from './types';
 
 const UNIQUE_SCRIPT_ID = 'jw-player-script';
@@ -22,46 +19,39 @@ const DEFAULT_PROPS: Omit<ReactJWPlayerProps, 'playerId' | 'playerScript'> = {
   file: '',
   isAutoPlay: undefined,
   isMuted: undefined,
+  playlist: '',
+  customProps: {},
   onAdPlay: noOp,
   onAdSkipped: noOp,
   onAdComplete: noOp,
-  onEnterFullScreen: noOp,
-  onExitFullScreen: noOp,
   onMute: noOp,
-  onUnmute: noOp,
-  onAutoStart: noOp,
-  onResume: noOp,
   onPlay: noOp,
-  onClose: noOp,
   onReady: noOp,
   onError: noOp,
   onAdPause: noOp,
   onPause: noOp,
-  onVideoLoad: noOp,
-  onOneHundredPercent: noOp,
-  onThreeSeconds: noOp,
-  onTenSeconds: noOp,
-  onThirtySeconds: noOp,
-  onTwentyFivePercent: noOp,
-  onFiftyPercent: noOp,
-  onSeventyFivePercent: noOp,
-  onNinetyFivePercent: noOp,
   onTime: noOp,
   onBuffer: noOp,
   onBufferChange: noOp,
-  playlist: '',
-  customProps: {},
-  useMultiplePlayerScripts: false
+  onAdClick: noOp,
+  onAdCompanions: noOp,
+  onAdError: noOp,
+  onAdImpression: noOp,
+  onAdRequest: noOp,
+  onAdStarted: noOp,
+  onAdTime: noOp,
+  onFirstFrame: noOp,
+  onFullscreen: noOp,
+  onIdle: noOp,
+  onSeek: noOp,
+  onSetupError: noOp,
+  onVolume: noOp
 };
-
-
 
 class ReactJWPlayer extends React.Component<ReactJWPlayerProps, ReactJWPlayerState> {
   static displayName = DISPLAY_NAME;
 
   static defaultProps = DEFAULT_PROPS;
-
-  public eventHandlers;
 
   private uniqueScriptId;
 
@@ -69,28 +59,20 @@ class ReactJWPlayer extends React.Component<ReactJWPlayerProps, ReactJWPlayerSta
 
   constructor(props: ReactJWPlayerProps) {
     super(props);
-    this.state = {
-      adHasPlayed: false,
-      hasPlayed: false,
-      hasFired: false
-    };
+    this.state = { foo: 'bar' };
     this.uniqueScriptId = UNIQUE_SCRIPT_ID;
-    if (props.useMultiplePlayerScripts) {
-      this.uniqueScriptId += `-${ props.playerId }`;
-    }
 
     this.videoRef = null;
-    this.eventHandlers = createEventHandlers(this);
     this._initialize = this._initialize.bind(this);
     this._setVideoRef = this._setVideoRef.bind(this);
   }
 
   componentDidMount(): void {
+    //  console.info('Component did mount');
     const isJWPlayerScriptLoaded = Boolean((window as ExtendedWindow).jwplayer);
     const existingScript = document.getElementById(this.uniqueScriptId);
-    const isUsingMultiplePlayerScripts = this.props.useMultiplePlayerScripts;
 
-    if (!isUsingMultiplePlayerScripts && (isJWPlayerScriptLoaded || existingScript)) {
+    if (isJWPlayerScriptLoaded || existingScript) {
       this._initialize();
       return;
     }
@@ -102,14 +84,11 @@ class ReactJWPlayer extends React.Component<ReactJWPlayerProps, ReactJWPlayerSta
         scriptSrc: this.props.playerScript,
         uniqueScriptId: this.uniqueScriptId
       });
-    } else {
-      
-      existingScript.addEventListener('onload', this._initialize);
-    }
+    } 
   }
 
   shouldComponentUpdate(nextProps: ReactJWPlayerProps): boolean {
-    console.info('Component should update', this.props);
+    //  console.info('Component should update');
     const hasFileChanged = this.props.file !== nextProps.file;
     const hasPlaylistChanged = !isEqual(this.props.playlist, nextProps.playlist);
     const hasIsMutedChanged = this.props.isMuted !== nextProps.isMuted;
@@ -118,10 +97,12 @@ class ReactJWPlayer extends React.Component<ReactJWPlayerProps, ReactJWPlayerSta
   }
 
   componentDidUpdate(): void{
-    console.info('Component update', this.props);
+    // console.info('Component did update');
     if (typeof window !== 'undefined' && this.videoRef !== null) {
       const extendedWindow = window as ExtendedWindow;
       const player = extendedWindow.jwplayer(this.videoRef);
+
+      //TODO: update other props
       if (player) {
         player.setMute(this.props.isMuted);
       }
@@ -129,6 +110,7 @@ class ReactJWPlayer extends React.Component<ReactJWPlayerProps, ReactJWPlayerSta
   }
 
   componentWillUnmount(): void {
+    // console.info('Component will unmount');
     const existingScript = document.getElementById(this.uniqueScriptId);
     existingScript?.removeEventListener('onload', this._initialize);
     if (this.videoRef) {
@@ -137,12 +119,6 @@ class ReactJWPlayer extends React.Component<ReactJWPlayerProps, ReactJWPlayerSta
   }
 
   _initialize(): void {
-    const { playerId, useMultiplePlayerScripts } = this.props;
-
-    if (useMultiplePlayerScripts) {
-      setJWPlayerDefaults({ context: window, playerId });
-    }
-
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const component = this;
     let player;
@@ -173,7 +149,5 @@ class ReactJWPlayer extends React.Component<ReactJWPlayerProps, ReactJWPlayerSta
     );
   }
 }
-
-
 
 export default ReactJWPlayer;
