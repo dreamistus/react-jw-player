@@ -23,7 +23,6 @@ const DEFAULT_PROPS: Omit<ReactJWPlayerProps, 'playerId' | 'playerScript'> = {
   isAutoPlay: undefined,
   isMuted: undefined,
   onAdPlay: noOp,
-  onAdResume: noOp,
   onAdSkipped: noOp,
   onAdComplete: noOp,
   onEnterFullScreen: noOp,
@@ -110,17 +109,21 @@ class ReactJWPlayer extends React.Component<ReactJWPlayerProps, ReactJWPlayerSta
   }
 
   shouldComponentUpdate(nextProps: ReactJWPlayerProps): boolean {
+    console.info('Component should update', this.props);
     const hasFileChanged = this.props.file !== nextProps.file;
     const hasPlaylistChanged = !isEqual(this.props.playlist, nextProps.playlist);
+    const hasIsMutedChanged = this.props.isMuted !== nextProps.isMuted;
 
-    return hasFileChanged || hasPlaylistChanged;
+    return hasFileChanged || hasPlaylistChanged || hasIsMutedChanged;
   }
 
   componentDidUpdate(): void{
+    console.info('Component update', this.props);
     if (typeof window !== 'undefined' && this.videoRef !== null) {
       const extendedWindow = window as ExtendedWindow;
-      if (extendedWindow.jwplayer(this.videoRef)) {
-        this._initialize();
+      const player = extendedWindow.jwplayer(this.videoRef);
+      if (player) {
+        player.setMute(this.props.isMuted);
       }
     }
   }
@@ -128,7 +131,9 @@ class ReactJWPlayer extends React.Component<ReactJWPlayerProps, ReactJWPlayerSta
   componentWillUnmount(): void {
     const existingScript = document.getElementById(this.uniqueScriptId);
     existingScript?.removeEventListener('onload', this._initialize);
-    removeJWPlayerInstance(this.videoRef, window);
+    if (this.videoRef) {
+      removeJWPlayerInstance({ playerRef: this.videoRef, context: window });
+    }
   }
 
   _initialize(): void {
@@ -144,7 +149,7 @@ class ReactJWPlayer extends React.Component<ReactJWPlayerProps, ReactJWPlayerSta
 
     if (typeof window !== 'undefined' && this.videoRef !== null) {
       const extendedWindow = window as ExtendedWindow;
-      player = extendedWindow.jwplayer(this.videoRef);
+      player = extendedWindow.jwplayer && extendedWindow.jwplayer(this.videoRef);
     }
     if (!player) {
       // this player ref may have been destroyed already

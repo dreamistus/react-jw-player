@@ -1,8 +1,5 @@
-import React from 'react';
 import ReactJWPlayer from '..';
-import { eventMap, PlayerEvent, ReactJWPlayerProps } from '../types';
-
-import getEventNameFromProp from './get-event-name-from-prop';
+import { callbackToEventMap, ReactJWPlayerProps } from '../types';
 import { PlayerOpts } from './get-player-opts';
 
 
@@ -12,16 +9,17 @@ type InitializeArgType = {
   playerOpts: PlayerOpts; };
 
 function initialize({ component, player, playerOpts }: InitializeArgType): void {
+  console.info('Init player');
   function onBeforePlay(event: Event): void {
     component.eventHandlers.onBeforePlay(event, player);
   }
 
-  player.setup(playerOpts);
+  player.setup( playerOpts );
 
   const eventsToInitialize: { [key in keyof jwplayer.EventParams]? : unknown }  = {};
 
   Object.keys(component.props).forEach(prop => {
-    const eventName = eventMap[prop as keyof ReactJWPlayerProps];
+    const eventName = callbackToEventMap[prop as keyof ReactJWPlayerProps];
 
     if (eventName) {
       eventsToInitialize[eventName] = component.props[prop as keyof ReactJWPlayerProps];
@@ -36,10 +34,23 @@ function initialize({ component, player, playerOpts }: InitializeArgType): void 
   eventsToInitialize.time = component.eventHandlers.onTime;
 
 
-  //TODO: fix event handlers
-  (Object.keys(eventsToInitialize)  as Array<keyof jwplayer.EventParams>).forEach(event => {
-    player.on(event, () => {});
-  });
+  // if (component.props.onMute)
+  //   player.on('mute', component.props.onMute);
+
+  // if (component.props.onPlay)
+  //   player.on('play', component.props.onPlay);
+
+  // if (component.props.onReady)
+  //   player.on('ready', component.props.onReady);
+
+  (Object.keys(component.props) as Array<keyof ReactJWPlayerProps>).forEach(callbackName => {
+    const eventName = callbackToEventMap[callbackName];
+    if (eventName) {
+      const callback = component.props[callbackName] as jwplayer.EventCallback<jwplayer.EventParams[typeof eventName]>;
+      player.on(eventName, callback);
+    }
+  }
+  );
 }
 
 export default initialize;
